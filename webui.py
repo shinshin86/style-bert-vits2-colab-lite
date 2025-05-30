@@ -70,6 +70,16 @@ def run_pipeline(
         ]
     )
 
+    # リサンプリング処理を明示的に追加（raw/ -> wavs/）
+    raw_dir = os.path.join(DATASET_ROOT, model_name, "raw")
+    wavs_dir = os.path.join(DATASET_ROOT, model_name, "wavs")
+    resample_cmd = ["python", "resample.py", "--input_dir", raw_dir, "--output_dir", wavs_dir]
+    if normalize:
+        resample_cmd.append("--normalize")
+    if trim:
+        resample_cmd.append("--trim")
+    _run(resample_cmd)
+
     # Python API での前処理
     pyopenjtalk_worker.initialize_worker()
     preprocess_all(
@@ -93,8 +103,8 @@ def run_pipeline(
 
     # config.yml / パスの取得
     paths = get_path(model_name)
-    dataset_path = os.path.join(REPO_ROOT, str(paths.dataset_path))
-    config_path = os.path.join(REPO_ROOT, str(paths.config_path))
+    dataset_path = str(paths.dataset_path)
+    config_path = str(paths.config_path)
 
     # default_config.yml をコピーして model_name を書き換えた config.yml を用意
     with open(os.path.join(REPO_ROOT, "default_config.yml"), "r", encoding="utf-8") as fp:
